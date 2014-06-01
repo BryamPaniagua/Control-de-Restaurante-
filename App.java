@@ -23,48 +23,52 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 
 import org.bryampaniagua.database.Conexion;
 import org.bryampaniagua.manejadores.ManejadorMesero;
 import org.bryampaniagua.manejadores.ManejadorChef;
+import org.bryampaniagua.manejadores.ManejadorUsuario;
 import org.bryampaniagua.beans.Usuario;
 
 public class App extends Application implements EventHandler<Event>{
 	private Stage primaryStage;
 	private Scene primaryScene;
 	private TabPane tpPrincipal;
-	private Tab tbLogin, tabInicial, tbDBoard, tbEditarPerfil;
-	private GridPane gpLogin, gpEditarPerfil;
-	private Label lbNombreLog, lbContraseniaLog, lbBienvenida;
+	private Tab tbLogin, tabPrincipal, tbPrincipalMesero, tbPrincipalChef, tbEditarPerfil, tbUsuarioNoEncontrado;
+	private GridPane gpLogin, gpEditarPerfil, gpUsuarioNoEncontrado;
+	private Label lbNombreLog, lbContraseniaLog, lbBienvenida, lbUsuarioNoEncontrado;
 	private TextField tfNombreLog, tfNombre, tfNick, tfCorreo, tfEdad, tfTelefono;
 	private PasswordField pfContraseniaLog;
 	private Button btnLogin, btnHome, btnEditarPerfil, btnCerrarSesion;
+	private BorderPane bpPrincipal, bpPropiedadesChef, bpPropiedadesMesero, bpEditarPerfil;
+	private ToolBar tlbPrincipal;
 	private Image imgLogin, imgHome;
-	private BorderPane bpPrincipal, bpDBoard, bpEditarPerfil;
-	private ToolBar tbInicial;
-	private Image imgInicial;
-	private ImageView imgvwInicial;
-	private HBox hbCuentaPrincipal;
+	private Image imgPrincipal;
+	private ImageView imgvwPrincipal, imgvwLogin;
+	private HBox hbConfiguracion;
 	
-	private Conexion cnxConexion;
+	private Conexion cnx;
 	private ManejadorMesero meseroInstancia;
 	private ManejadorChef chefInstancia;
+	private ManejadorUsuario usuarioInstancia;
 	
 	public void start(Stage primaryStage){
 		this.primaryStage = primaryStage;
-		cnxConexion = new Conexion();
+		cnx = new Conexion();
 		
-		this.setManejadorMesero(new ManejadorMesero(cnxConexion));
-		this.setManejadorChef(new ManejadorChef(cnxConexion));
+		this.setManejadorMesero(new ManejadorMesero(cnx));
+		this.setManejadorUsuario(new ManejadorUsuario(cnx));
+		this.setManejadorChef(new ManejadorChef(cnx));
 		
-		primaryStage.setTitle("RESTAURANTE"); 
 		
 		primaryScene = new Scene(this.getTabPane());
 		
+		primaryStage.setTitle("RESTAURANTE"); 
 		primaryStage.setScene(primaryScene);
-		primaryStage.setWidth(700);
-		primaryStage.setHeight(700);
 		primaryStage.setResizable(true); 
+		primaryStage.setHeight(700);
+		primaryStage.setWidth(700);
 		primaryStage.show();
 	}
 	
@@ -72,82 +76,73 @@ public class App extends Application implements EventHandler<Event>{
 		if(tpPrincipal == null){
 			tpPrincipal = new TabPane();
 			
-			tpPrincipal.getTabs().add(this.getTabInicial());
+			tpPrincipal.getTabs().add(this.getTabPrincipal());
 		}
 		return tpPrincipal;
 	}
 	
+	public Tab getTabPrincipal(){
+		if(tabPrincipal == null){
+			tabPrincipal = new Tab("Restaurante");
+			tabPrincipal.setClosable(false);
+			tabPrincipal.setStyle("-fx-background-color: #00A090;");
+			
+			tabPrincipal.setContent(this.getContentPrincipal());
+		}
+		return tabPrincipal;
+	}
 	public Tab getTabLogin(){
 		if(tbLogin == null){
 			tbLogin = new Tab("LOGIN");
-			tpPrincipal.setStyle("-fx-background-color: #80BFFF;");
+			tbLogin.setClosable(false);
+			tbLogin.setStyle("-fx-background-color: #00A080;");
 			
 			imgLogin = new Image("Imagenes/log.jpg");
+			
+			imgvwLogin = new ImageView();
+			imgvwLogin.setImage(imgLogin);
 			
 			tbLogin.setContent(this.getContentLogin());
 		}
 		return tbLogin;
 	}
-	public Tab getTabInicial(){
-		if(tabInicial == null){
-			tabInicial = new Tab("Home");
-			tabInicial.setStyle("-fx-background-color: #00A090;");
+	public Tab getTabPrincipalMesero(){
+		if(tbPrincipalMesero == null){
+			tbPrincipalMesero = new Tab(("Bienvenido "+usuarioInstancia.getUsuarioIngresado().getNick()));
+			tbPrincipalMesero.setClosable(false);
 			
-			tabInicial.setContent(this.getContentPrincipal());
+			tbPrincipalMesero.setContent(this.getContenedorPropiedadesMesero());
 		}
-		return tabInicial;
+		return tbPrincipalMesero;
 	}
-	public Tab getTabPrincipal(){
-		if(tbDBoard == null){
-			tbDBoard = new Tab("Principal");
+	public Tab getTabPrincipalChef(){
+		if(tbPrincipalChef == null){
+			tbPrincipalChef = new Tab(("Bienvenido "+usuarioInstancia.getUsuarioIngresado().getNick()));
+			tbPrincipalChef.setClosable(false);
 			
-			tbDBoard.setContent(this.getContenedorDBoard());
+			tbPrincipalChef.setContent(this.getContenedorPropiedadesChef());
 		}
-		return tbDBoard;
+		return tbPrincipalChef;
 	}
 	public Tab getTabEditarPerfil(){
 		if(tbEditarPerfil == null){
-			tbEditarPerfil= new Tab("Editar Perfil");
+			tbEditarPerfil = new Tab("Editar Perfil");
+			tbEditarPerfil.setClosable(false);
 			
-			tbEditarPerfil.setContent(this.getContenedorEditarPerfil());
+			tbEditarPerfil.setContent(this.getContenedorEditarPerfil(usuarioInstancia.getUsuarioIngresado()));
 		}
 		return tbEditarPerfil;
 	}
-	
-	public BorderPane getContenedorDBoard(){
-		if(bpDBoard == null){
-			bpDBoard = new BorderPane();
-				
-			String nombreIngresado = null;
-			if(meseroInstancia.getUsuarioIngresado() != null){
-				nombreIngresado = meseroInstancia.getUsuarioIngresado().getNombre();
-			}else{
-				nombreIngresado = chefInstancia.getUsuarioIngresado().getNombre();
-			}
+	public Tab getTabUsuarioNoEncontrado(){
+		if(tbUsuarioNoEncontrado == null){
+			tbUsuarioNoEncontrado = new Tab("No encontrado");
+			tbUsuarioNoEncontrado.setClosable(false);
 			
-			hbCuentaPrincipal = new HBox();
-			
-			btnCerrarSesion = new Button("SALIR");
-			BorderPane.setMargin(btnCerrarSesion, new Insets(10,3,3,3));
-			btnCerrarSesion.addEventHandler(ActionEvent.ACTION, this);
-			
-			lbBienvenida = new Label("BIENVENIDO, has ingresado como "+nombreIngresado);
-			BorderPane.setMargin(lbBienvenida, new Insets(3,3,3,3));
-			
-			btnEditarPerfil = new Button("Editar PERFIL");
-			BorderPane.setMargin(btnEditarPerfil, new Insets(10,3,3,3));
-			btnEditarPerfil.addEventHandler(ActionEvent.ACTION, this);
-			
-			hbCuentaPrincipal.getChildren().addAll(lbBienvenida, btnCerrarSesion, btnEditarPerfil);
-			
-			Image imgPrincipal = new Image("ren.jpg");
-			ImageView imgViewPrincipal = new ImageView(imgPrincipal);
-			
-			bpDBoard.setTop(hbCuentaPrincipal);
-			bpDBoard.setCenter(imgViewPrincipal);
+			tbUsuarioNoEncontrado.setContent(this.getContentUsuarioNoEncontrado());
 		}
-		return bpDBoard;
+		return tbUsuarioNoEncontrado;
 	}
+	
 	public BorderPane getContentPrincipal(){
 		if(bpPrincipal == null){
 			bpPrincipal= new BorderPane();
@@ -156,62 +151,120 @@ public class App extends Application implements EventHandler<Event>{
 			btnLogin = new Button("LOGEAR");
 			btnLogin.addEventHandler(ActionEvent.ACTION, this);
 			
-			tbInicial = new ToolBar();
-			tbInicial.setStyle("-fx-background-color: #d9edf2;");
-			tbInicial.getItems().add(btnLogin);
+			tlbPrincipal = new ToolBar();
+			tlbPrincipal.setStyle("-fx-background-color: #d9edf2;");
+			tlbPrincipal.getItems().add(btnLogin);
 			
-			bpPrincipal.setTop(this.tbInicial);
-				imgInicial = new Image("inicial.jpg");
+			bpPrincipal.setTop(this.tlbPrincipal);
+				imgPrincipal = new Image("inicial.jpg");
 		 
-				imgvwInicial = new ImageView();
-				imgvwInicial.setImage(imgInicial);
+				imgvwPrincipal = new ImageView();
+				imgvwPrincipal.setImage(imgPrincipal);
 		
-			bpPrincipal.setCenter(imgvwInicial);
+			bpPrincipal.setCenter(imgvwPrincipal);
 		}
 		return bpPrincipal;
 	}	
 	public GridPane getContentLogin(){
-		// if(gpLogin != null){
-			// tfNombreLog.setText("");
-			// pfContraseniaLog.setText("");
-		// }
 		if(gpLogin == null){
 			gpLogin = new GridPane();
 			
-			lbNombreLog = new Label("Usuario o e-mail");
+			lbNombreLog = new Label("Correo Electronico");
 			lbContraseniaLog = new Label("Contrasenia ");
 			
 			tfNombreLog = new TextField();
-			tfNombreLog.setPromptText("ej. 'mario' o 'asad@ha.com'");
-			GridPane.setMargin(tfNombreLog, new Insets(3,3,15,25));
+			tfNombreLog.setPromptText("ej. 'asad@ha.com'");
 			tfNombreLog.addEventHandler(KeyEvent.KEY_RELEASED, this);
+			GridPane.setMargin(tfNombreLog, new Insets(3,3,15,25));
 			
 			pfContraseniaLog = new PasswordField();
 			pfContraseniaLog.setPromptText("Contrasenia");
-			GridPane.setMargin(pfContraseniaLog, new Insets(3,3,3,25));
-			pfContraseniaLog.setMinHeight(100);
 			pfContraseniaLog.addEventHandler(KeyEvent.KEY_RELEASED, this);
-			
-			btnHome = new Button("HOME");
-			btnHome.addEventHandler(ActionEvent.ACTION, this);
+			GridPane.setMargin(pfContraseniaLog, new Insets(3,3,3,25));
 			
 			gpLogin.add(lbNombreLog, 0, 0);
 			gpLogin.add(lbContraseniaLog, 0, 1);
 			gpLogin.add(tfNombreLog, 1, 0);
-			gpLogin.add(pfContraseniaLog, 1, 1);
-			gpLogin.add(btnHome, 1, 3, 2, 1);
+			gpLogin.add(pfContraseniaLog, 1, 1, 2,3);
+			gpLogin.add(this.getBtnHome(), 0, 3, 2, 1);
 		}
 		return gpLogin;
 	}
-	public BorderPane getContenedorEditarPerfil(){
+	public BorderPane getContenedorPropiedadesChef(){
+		if(bpPropiedadesChef == null){
+			bpPropiedadesChef = new BorderPane();
+				
+			Image imgInicioSesion = new Image("chef4.jpg");
+			ImageView imgViewInicioSesion = new ImageView(imgInicioSesion);
+			
+			bpPropiedadesChef.setTop(this.getContentConfiguracion());
+			bpPropiedadesChef.setCenter(imgViewInicioSesion);
+		}
+		return bpPropiedadesChef;
+	}
+	public BorderPane getContenedorPropiedadesMesero(){
+		if(bpPropiedadesMesero == null){
+			bpPropiedadesMesero = new BorderPane();
+			
+			Image imgPrincipal = new Image("mes1.png");
+			ImageView imgViewPrincipal = new ImageView(imgPrincipal);
+			
+			bpPropiedadesMesero.setTop(this.getContentConfiguracion());
+			bpPropiedadesMesero.setCenter(imgViewPrincipal);
+		}
+		return bpPropiedadesMesero;
+	}
+	public HBox getContentConfiguracion(){
+		String nombreIngresado = usuarioInstancia.getUsuarioIngresado().getNombre();
+		
+		hbConfiguracion = new HBox();
+		
+		btnCerrarSesion = new Button("SALIR");
+		BorderPane.setMargin(btnCerrarSesion, new Insets(0,10,0,10));
+		btnCerrarSesion.addEventHandler(ActionEvent.ACTION, this);
+		
+		lbBienvenida = new Label("BIENVENIDO, has ingresado como "+nombreIngresado);
+		BorderPane.setMargin(lbBienvenida, new Insets(0,10,0,10));
+		
+		btnEditarPerfil = new Button("Editar PERFIL");
+		BorderPane.setMargin(btnEditarPerfil, new Insets(10,0,10,0));
+		btnEditarPerfil.addEventHandler(ActionEvent.ACTION, this);
+		
+		hbConfiguracion.getChildren().addAll(lbBienvenida, btnCerrarSesion, btnEditarPerfil);
+		
+		return hbConfiguracion;
+	}
+	public BorderPane getContenedorEditarPerfil(Usuario usuario){
 		if(bpEditarPerfil == null){
 			gpEditarPerfil = new GridPane();
+			
+			
+			tfNombre = new TextField();
+			tfNombre.setText(usuario.getNombre());
+			tfNombre.addEventHandler(KeyEvent.KEY_RELEASED, this);
+			
+			tfNick = new TextField();
+			tfNick.setText(usuario.getNick());
+			tfNick.addEventHandler(KeyEvent.KEY_RELEASED, this);
+			
+			tfCorreo = new TextField();
+			tfCorreo.setText(usuario.getCorreo());
+			tfCorreo.addEventHandler(KeyEvent.KEY_RELEASED, this);
+			
+			tfEdad = new TextField();
+			tfEdad.setText(String.valueOf(usuario.getEdad()));
+			tfEdad.addEventHandler(KeyEvent.KEY_RELEASED, this);
+			
+			tfTelefono = new TextField();
+			tfTelefono.setText(String.valueOf(usuario.getTelefono()));
+			tfTelefono.addEventHandler(KeyEvent.KEY_RELEASED, this);
 			
 			gpEditarPerfil.add(new Label("Nombre"), 0,0);
 			gpEditarPerfil.add(new Label("Nick"), 0,1);
 			gpEditarPerfil.add(new Label("Correo"), 0,2);
 			gpEditarPerfil.add(new Label("Edad"), 0,3);
 			gpEditarPerfil.add(new Label("Telefono"), 0,4);
+				
 			gpEditarPerfil.add(tfNombre, 1,0);
 			gpEditarPerfil.add(tfNick, 1,1);
 			gpEditarPerfil.add(tfCorreo, 1,2);
@@ -224,22 +277,26 @@ public class App extends Application implements EventHandler<Event>{
 		}
 		return bpEditarPerfil;
 	}
+	public GridPane getContentUsuarioNoEncontrado(){
+		if(gpUsuarioNoEncontrado == null){
+			gpUsuarioNoEncontrado = new GridPane();
+			gpUsuarioNoEncontrado.setAlignment(Pos.CENTER);
+			
+			lbUsuarioNoEncontrado = new Label("Compruebe que sus datos esten correctos.\nUsuario no encontrado");
+			
+			gpUsuarioNoEncontrado.add(this.lbUsuarioNoEncontrado, 0,0);
+			gpUsuarioNoEncontrado.add(this.getBtnHome(), 0,1);
+		}
+		return gpUsuarioNoEncontrado;
+	}
 	
-	public void setDatosUsuario(Usuario usuario){
-		tfNombre = new TextField();
-		tfNombre.setText(usuario.getNombre());
-		
-		tfNick = new TextField();
-		tfNick.setText(usuario.getNick());
-		
-		tfCorreo = new TextField();
-		tfCorreo.setText(usuario.getCorreo());
-		
-		tfEdad = new TextField();
-		tfEdad.setText(String.valueOf(usuario.getEdad()));
-		
-		tfTelefono = new TextField();
-		tfTelefono.setText(String.valueOf(usuario.getTelefono()));
+	public Button getBtnHome(){
+		if(btnHome == null){
+			btnHome = new Button("Regresar");
+			btnHome.addEventHandler(ActionEvent.ACTION, this);
+			GridPane.setMargin(btnHome, new Insets(50,3,3,25));
+		}
+		return btnHome;
 	}
 	
 	public void setManejadorMesero(ManejadorMesero instancia){
@@ -248,51 +305,57 @@ public class App extends Application implements EventHandler<Event>{
 	public void setManejadorChef(ManejadorChef instancia){
 		this.chefInstancia = instancia;
 	}
+	public void setManejadorUsuario(ManejadorUsuario instancia){
+		this.usuarioInstancia = instancia;
+	}
 	
 	public void handle(Event event){
 		if(event instanceof ActionEvent){
+			tpPrincipal.getTabs().clear();
 			if(event.getSource().equals(btnLogin)){
-				tpPrincipal.getTabs().clear();
-				// ResultSet re = cnxConexion.execConsulta("SELECT nombre FROM Usuario WHERE idUsuario = 1");
-				// System.out.println(cnxConexion.execConsulta("SELECT nombre FROM Usuario WHERE idUsuario = 1"));
 				tpPrincipal.getTabs().add(this.getTabLogin());
 			}else if(event.getSource().equals(btnHome)){
-				tpPrincipal.getTabs().clear();
-				tpPrincipal.getTabs().add(this.getTabInicial());
+				tpPrincipal.getTabs().add(this.getTabPrincipal());
 			}else if(event.getSource().equals(btnEditarPerfil)){
-				if(meseroInstancia.getUsuarioIngresado() != null){
-					this.setDatosUsuario(meseroInstancia.getUsuarioIngresado());
-				}else{
-					this.setDatosUsuario(chefInstancia.getUsuarioIngresado());
-				}
 				if(!getTabPane().getTabs().contains(this.getTabEditarPerfil())){
+					System.out.println(usuarioInstancia.getUsuarioIngresado().getNombre());
+					System.out.println(usuarioInstancia.getUsuarioIngresado().getNick());
 					tpPrincipal.getTabs().add(this.getTabEditarPerfil());
 				}
-				setDatosUsuario(new Usuario());
 			}else if(event.getSource().equals(btnCerrarSesion)){
-				if(meseroInstancia.getUsuarioIngresado() != null){
-					meseroInstancia.salirDeSesion();
-				}else{
-					chefInstancia.salirDeSesion();					
-				}
-				tpPrincipal.getTabs().clear();
-				tpPrincipal.getTabs().add(this.getTabInicial());
+				usuarioInstancia.salirDeSesion();
+				tpPrincipal.getTabs().add(this.getTabPrincipal());
 			}
 		}else if(event instanceof KeyEvent){
 			KeyEvent keyEvent = (KeyEvent)event;
-			if(keyEvent.getCode()==KeyCode.ENTER){
+			if(keyEvent.getCode() == KeyCode.ENTER){
+				tpPrincipal.getTabs().clear();
 				if(event.getSource().equals(tfNombreLog) || event.getSource().equals(pfContraseniaLog)){
 					if(!tfNombreLog.getText().trim().equals(null) && !pfContraseniaLog.getText().trim().equals(null)){
-						tpPrincipal.getTabs().clear();
-						if(meseroInstancia.comprobar(tfNombreLog.getText().trim(), pfContraseniaLog.getText().trim()) != false){
-							tpPrincipal.getTabs().add(this.getTabPrincipal());
-						}else{
-							if(chefInstancia.comprobar(tfNombreLog.getText(), pfContraseniaLog.getText())){
-								tpPrincipal.getTabs().add(this.getTabPrincipal());
-							} else{
-								tpPrincipal.getTabs().add(this.getTabInicial());
+						if(usuarioInstancia.comprobar(tfNombreLog.getText().trim(), pfContraseniaLog.getText().trim()) != false){
+							if(usuarioInstancia.getUsuarioIngresado().getIdModulo() == 1){
+								tpPrincipal.getTabs().add(this.getTabPrincipalMesero());								
+							}else{
+								tpPrincipal.getTabs().add(this.getTabPrincipalChef());
 							}
+						}else{
+							tpPrincipal.getTabs().add(this.getTabUsuarioNoEncontrado());
 						}
+					}
+				}else if(event.getSource().equals(tfNombre) || event.getSource().equals(tfNick) || event.getSource().equals(tfCorreo) || event.getSource().equals(tfEdad) || event.getSource().equals(tfTelefono)){
+					if(!tfNombre.getText().equals(null) && !tfNick.getText().equals(null) && !tfCorreo.getText().equals(null) && !tfEdad.getText().equals(null) && !tfTelefono.getText().equals(null)){
+						Usuario usuario = new Usuario();
+						usuario.setNombre(tfNombre.getText());
+						usuario.setNick(tfNombre.getText());
+						usuario.setCorreo(tfNombre.getText());
+						usuario.setEdad(Integer.parseInt(tfEdad.getText()));
+						usuario.setTelefono(Integer.parseInt(tfTelefono.getText()));
+						usuarioInstancia.modificarUsuario(usuario);
+					}				
+					if(usuarioInstancia.getUsuarioIngresado().getIdModulo() == 1){
+						tpPrincipal.getTabs().add(this.getTabPrincipalMesero());								
+					}else{
+						tpPrincipal.getTabs().add(this.getTabPrincipalChef());
 					}
 				}			
 			}
