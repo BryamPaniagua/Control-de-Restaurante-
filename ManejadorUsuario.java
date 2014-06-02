@@ -15,20 +15,17 @@ public class ManejadorUsuario{
 		this.cnx = cnx;		
 	}
 	public boolean comprobar(String correo, String pass){
-		// ResultSet resultado = cnx.execConsulta("SELECT idUsuario, nombre, contrasenia, nick, correo, telefono,edad, idModulo FROM Usuario WHERE correo = '"+correo+"' AND contrasenia = '"+pass+"' ");
-		// try{
-			// if(resultado != null){
-				// if(resultado.next()){
-					// enSesion = new Usuario(resultado.getInt("idUsuario"), resultado.getString("nombre"), resultado.getString("nick"), resultado.getString("contrasenia"), resultado.getString("correo"), resultado.getInt("edad"), resultado.getInt("telefono"), resultado.getInt("idModulo"));
-					if(correo.equals("jp@gmail.com") && pass.equals("jop")){
-						enSesion = new Usuario(1, "Juan", "jop", "jop", "jp@gmail.com", 21, 24758457, 1);
-						return true;
-					}
-				// }
-			// }
-		// }catch(SQLException sqle){
-			// sqle.printStackTrace();
-		// }
+		ResultSet resultado = cnx.execConsulta("SELECT idUsuario, nombre, contrasenia, nick, correo, telefono,edad, idModulo FROM Usuario WHERE correo = '"+correo+"' AND contrasenia = '"+pass+"' ");
+		try{
+			if(resultado != null){
+				if(resultado.next()){
+					enSesion = new Usuario(resultado.getInt("idUsuario"), resultado.getString("nombre"), resultado.getString("nick"), resultado.getString("contrasenia"), resultado.getString("correo"), resultado.getInt("edad"), resultado.getInt("telefono"), resultado.getInt("idModulo"));
+					return true;
+				}
+			}
+		}catch(SQLException sqle){
+			sqle.printStackTrace();
+		}
 		return false;
 	}
 	public Usuario getUsuarioIngresado(){

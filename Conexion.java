@@ -7,7 +7,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 
 public class Conexion{
-	public Connection cntConexion;
+	public Connection cnx;
 	private Statement estado;
 	
 	public Conexion(){
@@ -15,9 +15,9 @@ public class Conexion{
 			System.out.println("Cargando conexion...");
 			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 			System.out.println("Cargando driver...");
-			cntConexion = DriverManager.getConnection("jdbc:sqlserver://localhost:1433;databaseName=dbRestaurante2012442", "BP", "123");
+			cnx = DriverManager.getConnection("jdbc:sqlserver://localhost:1433;databaseName=dbRestaurante2012442", "BP", "123");
 			System.out.println("Cargando base de datos...");
-			estado = cntConexion.createStatement();
+			estado = cnx.createStatement();
 			System.out.println("Creando estado..");
 		}catch(ClassNotFoundException cnfe){
 			cnfe.printStackTrace();
@@ -40,6 +40,8 @@ public class Conexion{
 		ResultSet rsResultado = null;
 		try{
 			rsResultado = estado.executeQuery(consulta);
+			System.out.println(rsResultado != null);
+			System.out.println(rsResultado);
 		}catch(SQLException sqle){
 			sqle.printStackTrace();
 		}
