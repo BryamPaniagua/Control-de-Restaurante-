@@ -7,19 +7,29 @@ import javafx.beans.property.SimpleStringProperty;
 
 public class Pedido{
 	private IntegerProperty idPedido, idCliente, idUsuario, idEstado;
-	private StringProperty fecha;
+	private StringProperty fecha, cliente, usuario, estado;
 	public Pedido(){
 		idPedido = new SimpleIntegerProperty();
 		idCliente = new SimpleIntegerProperty();
+		cliente = new SimpleStringProperty();
 		idUsuario = new SimpleIntegerProperty();
+		usuario = new SimpleStringProperty();
 		idEstado = new SimpleIntegerProperty();
+		estado = new SimpleStringProperty();
 		fecha = new SimpleStringProperty();
 	}
-	public Pedido(int idPedido, int idCliente, int idUsuario,int idEstado, String fecha){
+	public Pedido(int idPedido,int idCliente, String cliente,int idUsuario, String usuario,int idEstado, String estado, String fecha){
 		this.idPedido = new SimpleIntegerProperty(idPedido);
+		
 		this.idCliente = new SimpleIntegerProperty(idCliente);
+		this.cliente = new SimpleStringProperty(cliente);
+		
 		this.idUsuario = new SimpleIntegerProperty(idUsuario);
+		this.usuario = new SimpleStringProperty(usuario);
+		
 		this.idEstado = new SimpleIntegerProperty(idEstado);
+		this.estado = new SimpleStringProperty(estado);
+		
 		this.fecha = new SimpleStringProperty(fecha);
 	}
 	
@@ -42,6 +52,15 @@ public class Pedido{
 	public IntegerProperty idClienteProperty(){
 		return idCliente;
 	}
+	public String getCliente(){
+		return cliente.get();
+	}
+	public void setCliente(String cliente){
+		this.cliente.set(cliente);
+	}
+	public StringProperty clienteProperty(){
+		return cliente;
+	}
 
 	public int getIdUsuario(){
 		return idUsuario.get();
@@ -52,6 +71,15 @@ public class Pedido{
 	public IntegerProperty idUsuarioProperty(){
 		return idUsuario;
 	}
+	public String getUsuario(){
+		return usuario.get();
+	}
+	public void setUsuario(String usuario){
+		this.usuario.set(usuario);
+	}
+	public StringProperty usuarioProperty(){
+		return usuario;
+	}
 
 	public int getIdEstado(){
 		return idEstado.get();
@@ -61,6 +89,15 @@ public class Pedido{
 	}
 	public IntegerProperty idEstadoProperty(){
 		return idEstado;
+	}
+	public String getEstado(){
+		return estado.get();
+	}
+	public void setEstado(String estado){
+		this.estado.set(estado);
+	}
+	public StringProperty estadoProperty(){
+		return estado;
 	}
 
 	public String getFecha(){

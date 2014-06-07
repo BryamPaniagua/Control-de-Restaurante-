@@ -16,6 +16,7 @@ public class Conexion{
 			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 			System.out.println("Cargando driver...");
 			cnx = DriverManager.getConnection("jdbc:sqlserver://localhost:1433;databaseName=dbRestaurante2012442", "BP", "123");
+			// cnx = DriverManager.getConnection("jdbc:sqlserver://192.168.107.112:1433;databaseName=dbRestaurante2012442", "BP", "123");
 			System.out.println("Cargando base de datos...");
 			estado = cnx.createStatement();
 			System.out.println("Creando estado..");
@@ -33,6 +34,7 @@ public class Conexion{
 			resultado = estado.execute(sentencia);
 		}catch(SQLException sqle){
 			sqle.printStackTrace();
+			return resultado;
 		}
 		return resultado;
 	}
@@ -44,6 +46,7 @@ public class Conexion{
 			System.out.println(rsResultado);
 		}catch(SQLException sqle){
 			sqle.printStackTrace();
+			return rsResultado;
 		}
 		return rsResultado;
 	}

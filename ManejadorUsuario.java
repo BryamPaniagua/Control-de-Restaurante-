@@ -40,5 +40,6 @@ public class ManejadorUsuario{
 		enSesion.setCorreo(usuario.getCorreo());
 		enSesion.setTelefono(usuario.getTelefono());
 		enSesion.setEdad(usuario.getEdad());
+		cnx.execSentencia("UPDATE Usuario SET nombre = '"+usuario.getNombre()+"', nick = '"+usuario.getNick()+"', correo = '"+usuario.getCorreo()+"', telefono = "+usuario.getTelefono()+", edad = "+usuario.getEdad()+" WHERE idUsuario = "+enSesion.getIdUsuario());
 	}
 }
